@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Form Mahasiswa + Tabel</title>
+<style>
+  body{font-family:Segoe UI; background:#F1F5F9; display:flex; justify-content:center; padding:40px;}
+  .container{width:100%; max-width:700px;}
+  .card{background:#fff; padding:28px; border-radius:16px; box-shadow:0 4px 20px rgba(0,0,0,0.08); margin-bottom:24px;}
+  h1{color:#2563EB; text-align:center; margin-bottom:20px; font-size:22px;}
+  label{font-weight:600; font-size:14px; display:block; margin-bottom:6px;}
+  input, select{width:100%; padding:12px; border:1.5px solid #CBD5E1; border-radius:10px; margin-bottom:16px;}
+  select:disabled{background:#F1F5F9; color:#64748B;}
+  .btn{width:100%; padding:14px; background:#2563EB; color:#fff; border:none; border-radius:10px; font-weight:600; cursor:pointer;}
+  .btn:hover{background:#1D4ED8;}
+  .btn-danger{background:#EF4444; padding:6px 12px; font-size:12px; border-radius:8px;}
+  table{width:100%; border-collapse:collapse;}
+  th, td{padding:12px; text-align:left; border-bottom:1px solid #E2E8F0; font-size:14px;}
+  th{background:#EFF6FF; color:#1E40AF;}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <div class="card">
+    <h1>📝 Input Data Mahasiswa</h1>
+    <form id="formMahasiswa">
+      <label>NIM *</label>
+      <input type="text" id="nim" placeholder="Contoh: 202310101" required>
+
+      <label>Nama Lengkap *</label>
+      <input type="text" id="nama" placeholder="Masukkan nama mahasiswa" required>
+
+      <label>Jurusan *</label>
+      <select id="jurusan" required>
+        <option value="">-- Pilih Jurusan --</option>
+        <option value="Informatika">Teknik Informatika</option>
+        <option value="Sistem Informasi">Sistem Informasi</option>
+        <option value="Manajemen">Manajemen</option>
+        <option value="Akuntansi">Akuntansi</option>
+        <option value="Hukum">Ilmu Hukum</option>
+      </select>
+
+      <label>Fakultas *</label>
+      <select id="fakultas" required disabled>
+        <option value="">-- Otomatis terisi --</option>
+      </select>
+
+      <button type="submit" class="btn">Simpan Data</button>
+    </form>
+  </div>
+
+  <div class="card">
+    <h1>📋 Data Mahasiswa Tersimpan</h1>
+    <table id="tabelData">
+      <thead>
+        <tr>
+          <th>NIM</th><th>Nama</th><th>Jurusan</th><th>Fakultas</th><th>Aksi</th>
+        </tr>
+      </thead>
+      <tbody></tbody>
+    </table>
+  </div>
+</div>
+
+<script>
+  const jurusan = document.getElementById('jurusan');
+  const fakultas = document.getElementById('fakultas');
+  const form = document.getElementById('formMahasiswa');
+  const tbody = document.querySelector('#tabelData tbody');
+
+  let dataMahasiswa = JSON.parse(localStorage.getItem('mahasiswa')) || [];
+
+  // 1. SWITCH CASE UNTUK FAKULTAS OTOMATIS
+  jurusan.addEventListener('change', function(){
+    let jur = jurusan.value;
+    let namaFakultas = "";
+    fakultas.disabled = false;
+
+    switch(jur){
+      case "Informatika":
+      case "Sistem Informasi":
+        namaFakultas = "Fakultas Ilmu Komputer"; break;
+      case "Manajemen":
+      case "Akuntansi":
+        namaFakultas = "Fakultas Ekonomi"; break;
+      case "Hukum":
+        namaFakultas = "Fakultas Hukum"; break;
+      default:
+        namaFakultas = ""; fakultas.disabled = true;
+    }
+    fakultas.innerHTML = namaFakultas ? `<option value="${namaFakultas}">${namaFakultas}</option>` : `<option value="">-- Pilih Jurusan Dulu --</option>`;
+  });
+
+  // 2. FUNGSI TAMPILKAN TABEL
+  function tampilkanData(){
+    tbody.innerHTML = "";
+    dataMahasiswa.forEach((mhs, index) => {
+      tbody.innerHTML += `
+        <tr>
+          <td>${mhs.nim}</td>
+          <td>${mhs.nama}</td>
+          <td>${mhs.jurusan}</td>
+          <td>${mhs.fakultas}</td>
+          <td><button class="btn-danger" onclick="hapusData(${index})">Hapus</button></td>
+        </tr>
+      `;
+    });
+  }
+
+  // 3. SIMPAN DATA + KE LOCALSTORAGE
+  form.addEventListener('submit', function(e){
+    e.preventDefault();
+    const dataBaru = {
+      nim: nim.value,
+      nama: nama.value,
+      jurusan: jurusan.value,
+      fakultas: fakultas.value
+    };
+    dataMahasiswa.push(dataBaru);
+    localStorage.setItem('mahasiswa', JSON.stringify(dataMahasiswa));
+    tampilkanData();
+    form.reset();
+    fakultas.disabled = true;
+    alert('Data berhasil disimpan!');
+  });
+
+  // 4. HAPUS DATA
+  function hapusData(index){
+    if(confirm('Yakin mau hapus data ini?')){
+      dataMahasiswa.splice(index, 1);
+      localStorage.setItem('mahasiswa', JSON.stringify(dataMahasiswa));
+      tampilkanData();
+    }
+  }
+
+  // Tampilkan data pas pertama kali buka
+  tampilkanData();
+</script>
+
+</body>
+</html>
